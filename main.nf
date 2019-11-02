@@ -45,7 +45,7 @@ Channel
 
 process chop_multiVCF {
 
-    tag "${filtered_vcf}"
+    tag "${vcf.simpleName}"
     container 'broadinstitute/gatk:latest'
     publishDir "${params.outdir}/subsampled_multisample_vcf/{$sample_list.simpleName}", mode: 'copy'
 
@@ -65,7 +65,7 @@ process chop_multiVCF {
     gatk SelectVariants \
     -R ${fasta} \
     -V $vcf \
-    -O ${filtered_vcf.simpleName}.passed.SNPs.vcf \
+    -O ${vcf.simpleName}.${sample_list}.vcf \
     --sample_file ${sample_list} \
    """
 }

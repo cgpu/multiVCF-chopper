@@ -12,27 +12,27 @@ threadmem = (((Runtime.getRuntime().maxMemory() * 4) / threads) as nextflow.util
 if (params.fasta) {
     Channel.fromPath(params.fasta)
            .ifEmpty { exit 1, "fasta annotation file not found: ${params.fasta}" }
-           .into { ch_fasta; fasta_vcf2maf }
+           .into { ch_fasta }
 }
 
 // fai
 if (params.fai) {
     Channel.fromPath(params.fai)
            .ifEmpty { exit 1, "fasta index file not found: ${params.fai}" }
-           .into { ch_fai ; fai_vcf2maf  }
+           .into { ch_fai  }
 }
 
 // dict
 if (params.dict) {
     Channel.fromPath(params.dict)
            .ifEmpty { exit 1, "dict annotation file not found: ${params.dict}" }
-           .into { ch_dict ; dict_vcf2maf }
+           .into { ch_dict }
 }
 
 Channel
     .fromPath(params.multiVCF)
     .toSortedList()
-    .set {  ch_multiVCF}
+    .set { ch_multiVCF}
 
 Channel
     .fromPath(params.multiVCF_index)
@@ -66,6 +66,6 @@ process chop_multiVCF {
     -R ${fasta} \
     -V $vcf \
     -O ${vcf.simpleName}.${sample_list}.vcf \
-    --sample_file ${sample_list} \
+    --sample-name ${sample_list} \
    """
 }

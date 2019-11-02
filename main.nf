@@ -31,12 +31,12 @@ if (params.dict) {
 
 Channel
     .fromPath(params.multiVCF)
-    .toSortedList
+    .toSortedList()
     .set {  ch_multiVCF}
 
 Channel
     .fromPath(params.multiVCF_index)
-    .toSortedList
+    .toSortedList()
     .set {  ch_multiVCF_tbi}
 
 Channel

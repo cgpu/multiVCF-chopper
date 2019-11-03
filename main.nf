@@ -40,14 +40,17 @@ Channel
     .set {  ch_multiVCF_tbi}
 
 Channel
-    .fromPath(params.list_folder)
-    .set {  ch_subset_lists}
+    .fromPath("${params.list_folder}/*.list")
+    .flatten()
+    .into { ch_subset_lists; ch_view}
+
+ch_view.view()
 
 process chop_multiVCF {
 
     tag "${vcf.simpleName}"
     container 'broadinstitute/gatk:latest'
-    publishDir "${params.outdir}/subsampled_multisample_vcf/{$sample_list.simpleName}", mode: 'copy'
+    publishDir "${params.outdir}/subsampled_multisample_vcf/$sample_list.simpleName", mode: 'copy'
 
     input:
     each file(vcf) from ch_multiVCF
@@ -65,7 +68,7 @@ process chop_multiVCF {
     gatk SelectVariants \
     -R ${fasta} \
     -V $vcf \
-    -O ${vcf.simpleName}.${sample_list}.vcf \
+    -O ${vcf.baseName}.${sample_list.simpleName}.vcf \
     --sample-name ${sample_list} \
    """
 }

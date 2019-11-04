@@ -9,52 +9,33 @@ int threads = Runtime.getRuntime().availableProcessors()
 threadmem = (((Runtime.getRuntime().maxMemory() * 4) / threads) as nextflow.util.MemoryUnit)
 
 // fasta
-if (params.fasta) {
-    Channel.fromPath(params.fasta)
-           .ifEmpty { exit 1, "fasta annotation file not found: ${params.fasta}" }
-           .into { ch_fasta ; ch_fasta_gather}
-}
+Channel.fromPath(params.fasta)
+        .ifEmpty { exit 1, "fasta annotation file not found: ${params.fasta}" }
+        .into { ch_fasta ; ch_fasta_gather}
 
 // fai
-if (params.fai) {
-    Channel.fromPath(params.fai)
-           .ifEmpty { exit 1, "fasta index file not found: ${params.fai}" }
-           .into { ch_fai ; ch_fai_gather }
-}
+Channel.fromPath(params.fai)
+        .ifEmpty { exit 1, "fasta index file not found: ${params.fai}" }
+        .into { ch_fai ; ch_fai_gather }
 
 // dict
-if (params.dict) {
-    Channel.fromPath(params.dict)
-           .ifEmpty { exit 1, "dict annotation file not found: ${params.dict}" }
-           .into { ch_dict ; ch_dict_gather }
-}
+Channel.fromPath(params.dict)
+        .ifEmpty { exit 1, "dict annotation file not found: ${params.dict}" }
+        .into { ch_dict ; ch_dict_gather }
 
 // ch_reference        = ch_fasta.combine(ch_fai)
 // ch_reference_bundle = ch_reference.combine(ch_dict)
 // ch_reference_bundle.view()
 
-Channel
-    .fromPath(params.multiVCF)
-    .toSortedList()
-    .set { ch_multiVCF}
+Channel.fromPath(params.multiVCF_table)
+       .ifEmpty { exit 1, "File with vcf and respective index not found or not passed to --multiVCF_table" }
+       .splitCsv(sep: ',',  skip: 1 )
+       .map{ vcf, vcf_index -> [file(vcf), file(vcf_index)] }
+       .set { ch_multiVCF_table }
 
-Channel
-    .fromPath(params.multiVCF_index)
-    .toSortedList()
-    .set {  ch_multiVCF_tbi}
-
-Channel
-    .fromPath("${params.multiVCF_table}")
-    .ifEmpty { exit 1, "File with vcf and respective index not found or not passed to --multiVCF_table" }
-    .splitCsv(sep: ',',  skip: 1 )
-    .map{ vcf, vcf_index -> [file(vcf), file(vcf_index)] }
-    .set { ch_multiVCF_table }
-
-
-Channel
-    .fromPath("${params.list_folder}/*.list")
-    .flatten()
-    .into { ch_subset_lists; ch_subset_lists_view}
+Channel.fromPath("${params.list_folder}/*.list")
+       .flatten()
+       .into { ch_subset_lists; ch_subset_lists_view}
 
 // Create ch with [pop.list, vcf, vcf_index]
 ch_multiVCF = ch_subset_lists_view.combine(ch_multiVCF_table)

@@ -12,21 +12,21 @@ threadmem = (((Runtime.getRuntime().maxMemory() * 4) / threads) as nextflow.util
 if (params.fasta) {
     Channel.fromPath(params.fasta)
            .ifEmpty { exit 1, "fasta annotation file not found: ${params.fasta}" }
-           .set { ch_fasta }
+           .into { ch_fasta ; ch_fasta_gather}
 }
 
 // fai
 if (params.fai) {
     Channel.fromPath(params.fai)
            .ifEmpty { exit 1, "fasta index file not found: ${params.fai}" }
-           .set { ch_fai  }
+           .into { ch_fai ; ch_fai_gather }
 }
 
 // dict
 if (params.dict) {
     Channel.fromPath(params.dict)
            .ifEmpty { exit 1, "dict annotation file not found: ${params.dict}" }
-           .set { ch_dict }
+           .into { ch_dict ; ch_dict_gather }
 }
 
 // ch_reference        = ch_fasta.combine(ch_fai)
@@ -91,27 +91,30 @@ ch_pops_vcfs_to_inspect
                         .view()
 
 
-process MergeVCFs {
+// process GatherVcfs {
 
-    tag "${name[0]}.g.vcf"
-    publishDir "${params.outdir}/subsampled_multisample_vcf/${sample_list.simpleName}", mode: 'copy'
-    container 'broadinstitute/gatk:latest'
+//     tag "${pop_name}"
+//     publishDir "${params.outdir}/subsampled_multisample_vcf/${sample_list.simpleName}", mode: 'copy'
+//     container 'broadinstitute/gatk:latest'
 
-    input:
-    set val(), file ('*vcf') from ch_pops_vcfs
-    val name from sample.collect()
+//     input:
+//     set val(pop_name), file ('*vcf') from ch_pops_vcfs
+//     each file(fasta) from ch_fasta_gather
+//     each file(fai) from ch_fai_gather
+//     each file(dict) from ch_dict_gather
 
-    output:
-    set val("${name[0]}"), file("${name[0]}.g.vcf"), file("${name[0]}.g.vcf.idx") into vcf_bcftools, vcf_variant_eval
+//     output:
+//     file("*") into ch_complete_chr_vcf
 
-    script:
-    """
-    ## make list of input variant files
-    for vcf in \$(ls *vcf); do
-    echo \$vcf >> input_variant_files.list
-    done
-    gatk MergeVcfs \
-    --INPUT= input_variant_files.list \
-    --OUTPUT= ${name[0]}.vcf
-    """
-    }
+
+//     script:
+//     """
+//     ## make list of input variant files
+//     for vcf in \$(ls *vcf); do
+//     echo \$vcf >> input_variant_files.list
+//     done
+//     gatk GatherVcfs \
+//     --INPUT= input_variant_files.list \
+//     --OUTPUT= ${pop_name}.vcf
+//     """
+//     }

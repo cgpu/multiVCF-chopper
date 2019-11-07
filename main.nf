@@ -42,7 +42,7 @@ ch_multiVCF = ch_subset_lists_view.combine(ch_multiVCF_table)
 
 process chop_multiVCF {
 
-    tag "${sample_list.simpleName}"
+    tag {"${sample_list.simpleName}-${vcf.baseName}"}
     container 'broadinstitute/gatk:latest'
     publishDir "${params.outdir}/subsampled_multisample_vcf/${sample_list.simpleName}", mode: 'copy'
 
@@ -63,6 +63,8 @@ process chop_multiVCF {
     -V $vcf \
     -O ${vcf.baseName}.${sample_list.simpleName}.vcf \
     --sample-name ${sample_list} \
+    -use_jdk_inflator \
+    -use_jdk_deflator
    """
 }
 

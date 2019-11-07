@@ -63,8 +63,7 @@ process chop_multiVCF {
     -V $vcf \
     -O ${vcf.baseName}.${sample_list.simpleName}.vcf \
     --sample-name ${sample_list} \
-    -use_jdk_inflator \
-    -use_jdk_deflator
+    --java-options '-DGATK_STACKTRACE_ON_USER_EXCEPTION=true'
    """
 }
 
